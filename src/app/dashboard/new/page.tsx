@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, FileUp, FileText, Plus, X } from 'lucide-react';
 import Link from 'next/link';
+import { MAX_FILES, MAX_TOTAL_UPLOAD_BYTES } from '@/config/pipeline';
 export default function NewTender() {
   const router = useRouter(),
     [title, setTitle] = useState(''),
@@ -14,6 +15,30 @@ export default function NewTender() {
     [step, setStep] = useState(1),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
+  function selectFiles(event: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(event.currentTarget.files || []);
+    if (!selected.length) return;
+    if (selected.length > MAX_FILES) {
+      setFiles([]);
+      setError(`Choose no more than ${MAX_FILES} files.`);
+      event.currentTarget.value = '';
+      return;
+    }
+    if (selected.some((file) => !/\.(pdf|docx)$/i.test(file.name))) {
+      setFiles([]);
+      setError('Choose PDF or DOCX files only.');
+      event.currentTarget.value = '';
+      return;
+    }
+    if (selected.reduce((total, file) => total + file.size, 0) > MAX_TOTAL_UPLOAD_BYTES) {
+      setFiles([]);
+      setError('Combined file size must be 3.5 MB or less.');
+      event.currentTarget.value = '';
+      return;
+    }
+    setFiles(selected);
+    setError('');
+  }
   async function start() {
     setBusy(true);
     setError('');
@@ -87,35 +112,35 @@ export default function NewTender() {
               className="mt-3 w-full rounded-xl border border-neutral-200 px-4 py-4 text-sm outline-none focus:border-neutral-900"
             />
           </label>
-          <label className="block">
-            <span className="text-xs font-semibold uppercase tracking-[.12em] text-neutral-500">
+          <div>
+            <label htmlFor="file-upload" className="text-xs font-semibold uppercase tracking-[.12em] text-neutral-500">
               Tender package *
-            </span>
-            <input
-              type="file"
-              accept=".pdf,.docx"
-              multiple
-              onChange={(e) =>
-                setFiles(Array.from(e.target.files || []).slice(0, 6))
-              }
-              className="hidden"
-              id="file-upload"
-            />
-            <span
-              onClick={() => document.getElementById('file-upload')?.click()}
-              className="mt-3 flex cursor-pointer flex-col items-center rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-6 py-12 text-center hover:border-neutral-700"
+            </label>
+            <div
+              className="relative mt-3 flex flex-col items-center rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-6 py-12 text-center hover:border-neutral-700 focus-within:border-neutral-900 focus-within:ring-2 focus-within:ring-neutral-200"
             >
+              <input
+                type="file"
+                accept=".pdf,.docx"
+                multiple
+                onChange={selectFiles}
+                className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                id="file-upload"
+                aria-label="Choose tender PDF or DOCX files"
+              />
               <span className="grid size-12 place-items-center rounded-xl bg-white shadow-sm">
                 <FileUp size={22} />
               </span>
               <span className="mt-4 text-sm font-semibold">
-                Choose PDF or DOCX files
+                {files.length ? `${files.length} file${files.length === 1 ? '' : 's'} selected` : 'Choose PDF or DOCX files'}
               </span>
               <span className="mt-1 text-xs text-neutral-400">
                 Main tender first · up to 6 files · 3.5 MB combined
               </span>
-            </span>
-          </label>
+            </div>
+            <p className="mt-2 text-xs text-neutral-500">Files are uploaded after you confirm and start analysis.</p>
+            {error && <p role="alert" className="mt-2 text-xs text-red-700">{error}</p>}
+          </div>
           {files.length > 0 && (
             <div className="space-y-2">
               {files.map((f, i) => (
