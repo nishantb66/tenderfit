@@ -20,14 +20,17 @@ export async function POST(
       organizationId: ORG_ID,
       ownerUserId: user.sub,
       status: 'complete',
-      'requirements.status': 'analysis_error',
+      $or: [
+        { 'requirements.status': 'analysis_error' },
+        { requirements: { $size: 0 } },
+      ],
     };
     const claimed = await d.collection('analyses').findOneAndUpdate(
       filter,
       { $set: { status: 'comparing', progress: 45 }, $unset: { completedAt: '' } },
       { returnDocument: 'before' },
     );
-    if (!claimed) return error('No completed analysis errors to retry', 409);
+    if (!claimed) return error('No empty or failed analysis to retry', 409);
     try {
       await rateLimit('analysis-retry', user.sub, 5, 3600_000);
       const run = await start(retryAnalysisErrors, [id]);

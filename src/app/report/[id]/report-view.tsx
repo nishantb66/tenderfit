@@ -140,13 +140,13 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
             </div>
             {a.status === 'complete' && (
               <div className="flex flex-wrap gap-2">
-                {!isAdmin && a.requirements.some((r) => r.status === 'analysis_error') && (
+                {!isAdmin && (!a.requirements.length || a.requirements.some((r) => r.status === 'analysis_error')) && (
                   <button
                     onClick={retryErrors}
                     disabled={retrying}
                     className="rounded-full border border-neutral-300 bg-white px-4 py-3 text-xs font-semibold disabled:opacity-50"
                   >
-                    {retrying ? 'Starting retry…' : 'Retry analysis errors'}
+                    {retrying ? 'Starting retry…' : a.requirements.length ? 'Retry analysis errors' : 'Retry extraction'}
                   </button>
                 )}
                 <button

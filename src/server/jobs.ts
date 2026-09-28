@@ -10,6 +10,7 @@ import {
 } from './verdict';
 import { ORG_ID, EMBEDDING_MODEL, PARSER_VERSION } from '@/config/pipeline';
 import { createHash } from 'node:crypto';
+import { numberedRequirements } from './numbered-requirements';
 type ExtractedRequirement = {
   text: string;
   category: string;
@@ -298,9 +299,18 @@ export async function analyzeTender(analysisId: string) {
 export async function retryAnalysisErrors(analysisId: string) {
   'use workflow';
   try {
-    const failed = await failedRequirementIds(analysisId);
-    for (const requirementId of failed)
-      await compareOne(analysisId, requirementId);
+    const plan = await retryPlan(analysisId);
+    if (plan.empty) {
+      const passages = await parseTenderDocuments(analysisId);
+      for (const passageId of passages)
+        await extractTenderPassage(analysisId, passageId);
+      const requirements = await normalizeRequirements(analysisId);
+      for (const requirementId of requirements)
+        await compareOne(analysisId, requirementId);
+    } else {
+      for (const requirementId of plan.failedIds)
+        await compareOne(analysisId, requirementId);
+    }
     await finishAnalysis(analysisId);
   } catch (e) {
     await failRetry(
@@ -318,14 +328,15 @@ async function failRetry(analysisId: string, message: string) {
     { $set: { status: 'complete', progress: 100, lastRetryError: message, completedAt: new Date() } },
   );
 }
-async function failedRequirementIds(analysisId: string) {
+async function retryPlan(analysisId: string) {
   'use step';
   const d = await db();
   const analysis = await d.collection('analyses').findOne({ _id: oid(analysisId) });
   if (!analysis) throw new Error('Analysis missing');
-  return (analysis.requirements as Requirement[])
+  const requirements = analysis.requirements as Requirement[];
+  return { empty: requirements.length === 0, failedIds: requirements
     .filter((r) => r.status === 'analysis_error')
-    .map((r) => r.id);
+    .map((r) => r.id) };
 }
 async function parseTenderDocuments(analysisId: string) {
   'use step';
@@ -389,9 +400,17 @@ async function extractTenderPassage(analysisId: string, passageId: string) {
       '{"requirements":[{"text":"...","category":"eligibility|technical|commercial|submission|date|other","mandatory":true,"tenderCitationIds":["given citation ID"],"documentRequested":"optional","dueDate":"optional ISO date"}]}',
     prompt: `Document: ${passage.filename}; page/anchor: ${passage.section}; citation ID: ${passage.id}. Extract every atomic eligibility, technical, commercial and submission requirement. Only use this citation ID. TEXT:\n${String(passage.text).slice(0, 14000)}`,
   });
-  const valid = (raw.requirements || []).filter(
+  let valid = (raw.requirements || []).filter(
     (r) => r.text && r.tenderCitationIds?.includes(passageId),
   );
+  if (!valid.length) {
+    valid = numberedRequirements(String(passage.text), passageId);
+    if (valid.length)
+      await d.collection('analyses').updateOne(
+        { _id: analysis._id },
+        { $addToSet: { coverageWarnings: `${passage.filename}: AI extraction was empty; numbered requirements were recovered automatically. Review completeness.` } },
+      );
+  }
   await d
     .collection('extracted_requirements')
     .updateOne(
@@ -420,6 +439,8 @@ async function normalizeRequirements(analysisId: string) {
     gaps: [],
     needsHumanReview: false,
   }));
+  if (!requirements.length)
+    throw new Error('No requirements could be extracted. Check the tender text or try another model.');
   await d
     .collection('analyses')
     .updateOne(
