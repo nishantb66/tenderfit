@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  certificateAbsenceGuard,
   verdict,
   validateComparison,
   numericGuard,
@@ -71,5 +72,17 @@ describe('conservative verdict', () => {
         unit: 'crore',
       }),
     ).toBe('needs_verification');
+  });
+  it('does not treat a missing uploaded certificate as proof the company lacks one', () => {
+    expect(certificateAbsenceGuard(
+      'Provide a valid ISO 27001 certificate',
+      ['No ISO 27001 certificate is included in these test documents.'],
+      'not_satisfied',
+    )).toBe('needs_verification');
+    expect(certificateAbsenceGuard(
+      'Provide a valid ISO 27001 certificate',
+      ['The company does not hold ISO 27001 certification.'],
+      'not_satisfied',
+    )).toBe('not_satisfied');
   });
 });

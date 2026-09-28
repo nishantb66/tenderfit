@@ -108,3 +108,25 @@ export function numericGuard(
   if ((raw.status === 'satisfied') !== passes) return 'needs_verification';
   return raw.status;
 }
+export function certificateAbsenceGuard(
+  requirement: string,
+  evidence: string[],
+  status: Status,
+): Status {
+  if (status !== 'not_satisfied' || !/certificat/i.test(requirement))
+    return status;
+  const standard = requirement.match(/\bISO\s*\d+(?::\d+)?/i)?.[0];
+  if (!standard) return status;
+  const mentions = evidence
+    .flatMap((text) => text.match(/[^.!?]+[.!?]?/g) || [])
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.toLowerCase().includes(standard.toLowerCase()));
+  if (
+    mentions.length &&
+    mentions.every((sentence) =>
+      /\bno\b.{0,100}\bcertificat\w*\b.{0,100}\b(?:included|provided|supplied|attached|submitted)\b/i.test(sentence),
+    )
+  )
+    return 'needs_verification';
+  return status;
+}

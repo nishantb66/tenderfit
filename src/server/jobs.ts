@@ -3,6 +3,7 @@ import { parseFile } from './files';
 import { embed, groqJson } from './ai';
 import { retrieve } from './retrieval';
 import {
+  certificateAbsenceGuard,
   numericGuard,
   validateComparison,
   verdict,
@@ -491,10 +492,25 @@ async function compareOne(analysisId: string, requirementId: string) {
       new Set(candidates.map((c) => c.citationId)),
       tenderIds,
     );
-    const guarded = numericGuard(r.text, { ...raw, status: validated.status });
+    const citedEvidence = candidates
+      .filter((c) => validated.companyCitationIds.includes(c.citationId))
+      .map((c) => c.text);
+    const evidenceStatus = certificateAbsenceGuard(
+      r.text,
+      citedEvidence,
+      validated.status,
+    );
+    const guarded = numericGuard(r.text, { ...raw, status: evidenceStatus });
     next = {
       ...r,
       ...validated,
+      ...(evidenceStatus !== validated.status
+        ? {
+            status: evidenceStatus,
+            needsHumanReview: true,
+            reason: 'The cited documents say the certificate was not included. Obtain and verify it before deciding whether the requirement is met.',
+          }
+        : {}),
       ...(guarded && guarded !== validated.status
         ? {
             status: guarded,
