@@ -55,7 +55,9 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
       usage: { _id: string; promptTokens: number; completionTokens: number }[];
     } | null>(null),
     [selected, setSelected] = useState<Req | null>(null),
-    [error, setError] = useState('');
+    [error, setError] = useState(''),
+    [retrying, setRetrying] = useState(false),
+    [retryError, setRetryError] = useState('');
   useEffect(() => {
     let live = true;
     async function load() {
@@ -76,6 +78,23 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
     };
   }, [id, data?.analysis.status]);
   const a = data?.analysis;
+  async function retryErrors() {
+    setRetrying(true);
+    setRetryError('');
+    try {
+      const response = await fetch(`/api/analyses/${id}/retry`, { method: 'POST' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error?.message || 'Retry could not start');
+      setData((current) => current && {
+        ...current,
+        analysis: { ...current.analysis, status: 'comparing', progress: 45 },
+      });
+    } catch (e) {
+      setRetryError(e instanceof Error ? e.message : 'Retry could not start');
+    } finally {
+      setRetrying(false);
+    }
+  }
   function downloadCsv() {
     if (!a) return;
     const csv = [
@@ -120,7 +139,16 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
               </p>
             </div>
             {a.status === 'complete' && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                {!isAdmin && a.requirements.some((r) => r.status === 'analysis_error') && (
+                  <button
+                    onClick={retryErrors}
+                    disabled={retrying}
+                    className="rounded-full border border-neutral-300 bg-white px-4 py-3 text-xs font-semibold disabled:opacity-50"
+                  >
+                    {retrying ? 'Starting retry…' : 'Retry analysis errors'}
+                  </button>
+                )}
                 <button
                   onClick={downloadCsv}
                   className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-3 text-xs font-semibold"
@@ -136,6 +164,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
               </div>
             )}
           </div>
+          {retryError && <p role="alert" className="mt-4 text-sm text-red-700">{retryError}</p>}
           {a.status !== 'complete' ? (
             <div className="mt-10 rounded-[26px] border border-neutral-200 bg-white p-9">
               <div className="flex items-center gap-3">

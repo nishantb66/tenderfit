@@ -15,10 +15,45 @@ export async function retrieve(
   kbVersion: number,
 ): Promise<Candidate[]> {
   const d = await db();
-  const vector = await embedQuery(query);
   const filter = { organizationId: ORG_ID, kbVersion };
-  const [semantic, lexical] = await Promise.all([
-    d
+  // A tiny KB fits in the comparison context. Reading it directly avoids
+  // unnecessary embedding calls and prevents a rate limit from hiding facts.
+  const smallKb = await d
+    .collection('kb_chunks')
+    .find(filter, { projection: { embedding: 0 } })
+    .limit(9)
+    .toArray();
+  if (smallKb.length <= 8)
+    return smallKb.map((row) => ({
+      citationId: String(row.citationId),
+      documentId: String(row.documentId),
+      filename: String(row.filename),
+      page: Number(row.page),
+      section: String(row.section),
+      text: String(row.text),
+      score: 1,
+    }));
+  const lexicalPromise = d
+    .collection('kb_chunks')
+    .aggregate([
+      {
+        $search: {
+          index: 'kb_text_index',
+          compound: {
+            must: [{ text: { query, path: 'text' } }],
+            filter: [
+              { equals: { path: 'organizationId', value: ORG_ID } },
+              { equals: { path: 'kbVersion', value: kbVersion } },
+            ],
+          },
+        },
+      },
+      { $limit: 12 },
+      { $project: { embedding: 0, score: { $meta: 'searchScore' } } },
+    ])
+    .toArray();
+  const semanticPromise = embedQuery(query)
+    .then((vector) => d
       .collection('kb_chunks')
       .aggregate([
         {
@@ -33,27 +68,13 @@ export async function retrieve(
         },
         { $project: { embedding: 0, score: { $meta: 'vectorSearchScore' } } },
       ])
-      .toArray(),
-    d
-      .collection('kb_chunks')
-      .aggregate([
-        {
-          $search: {
-            index: 'kb_text_index',
-            compound: {
-              must: [{ text: { query, path: 'text' } }],
-              filter: [
-                { equals: { path: 'organizationId', value: ORG_ID } },
-                { equals: { path: 'kbVersion', value: kbVersion } },
-              ],
-            },
-          },
-        },
-        { $limit: 12 },
-        { $project: { embedding: 0, score: { $meta: 'searchScore' } } },
-      ])
-      .toArray(),
-  ]);
+      .toArray())
+    .catch((error: unknown) => {
+      if (error instanceof Error && error.message === 'Embedding service failed (429)')
+        return [];
+      throw error;
+    });
+  const [semantic, lexical] = await Promise.all([semanticPromise, lexicalPromise]);
   const ranks = new Map<string, Candidate>();
   for (const [list, weight] of [
     [semantic, 1],

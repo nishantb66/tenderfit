@@ -295,6 +295,38 @@ export async function analyzeTender(analysisId: string) {
     throw e;
   }
 }
+export async function retryAnalysisErrors(analysisId: string) {
+  'use workflow';
+  try {
+    const failed = await failedRequirementIds(analysisId);
+    for (const requirementId of failed)
+      await compareOne(analysisId, requirementId);
+    await finishAnalysis(analysisId);
+  } catch (e) {
+    await failRetry(
+      analysisId,
+      e instanceof Error ? e.message : 'Retry failed',
+    );
+    throw e;
+  }
+}
+async function failRetry(analysisId: string, message: string) {
+  'use step';
+  const d = await db();
+  await d.collection('analyses').updateOne(
+    { _id: oid(analysisId) },
+    { $set: { status: 'complete', progress: 100, lastRetryError: message, completedAt: new Date() } },
+  );
+}
+async function failedRequirementIds(analysisId: string) {
+  'use step';
+  const d = await db();
+  const analysis = await d.collection('analyses').findOne({ _id: oid(analysisId) });
+  if (!analysis) throw new Error('Analysis missing');
+  return (analysis.requirements as Requirement[])
+    .filter((r) => r.status === 'analysis_error')
+    .map((r) => r.id);
+}
 async function parseTenderDocuments(analysisId: string) {
   'use step';
   const d = await db();
