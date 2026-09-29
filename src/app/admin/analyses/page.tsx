@@ -26,7 +26,7 @@ export default function AdminAnalyses() {
       <p className="text-[11px] font-bold uppercase tracking-[.2em] text-neutral-400">
         Admin / Analyses
       </p>
-      <h1 className="mt-3 text-4xl font-semibold tracking-[-.06em] sm:text-5xl">
+      <h1 className="mt-4 text-4xl font-semibold tracking-[-.065em] sm:text-[3.5rem]">
         All tenders
       </h1>
       <p className="mt-3 text-sm text-neutral-500">
@@ -41,10 +41,10 @@ export default function AdminAnalyses() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search name or uploader"
-          className="w-full rounded-full border border-neutral-200 bg-white py-3 pl-11 pr-4 text-sm"
+          className="w-full rounded-full border border-stone-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-neutral-950 focus:ring-4 focus:ring-stone-200/70"
         />
       </div>
-      <div className="mt-6 overflow-x-auto rounded-[24px] border border-neutral-200 bg-white">
+      <div className="mt-6 overflow-x-auto rounded-[28px] border border-stone-200 bg-white shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
         <table className="w-full min-w-[750px] text-left text-sm">
           <thead>
             <tr className="border-b border-neutral-100 text-[10px] uppercase tracking-widest text-neutral-400">
@@ -67,7 +67,7 @@ export default function AdminAnalyses() {
               .map((x) => (
                 <tr
                   key={x.id}
-                  className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50"
+                  className="border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50"
                 >
                   <td className="px-6 py-5 font-semibold">{x.title}</td>
                   <td className="px-6 py-5 text-neutral-500">{x.ownerEmail}</td>

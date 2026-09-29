@@ -11,23 +11,23 @@ import {
 import { Brand } from '@/components/Brand';
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#f8f8f6]">
+    <div className="min-h-screen bg-stone-50 text-neutral-950">
       <header className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-6 lg:px-12">
         <Brand />
         <nav className="hidden items-center gap-9 text-sm font-medium text-neutral-600 md:flex">
-          <a href="#how" className="hover:text-black">
+          <a href="#how" className="transition hover:text-black">
             How it works
           </a>
-          <a href="#principles" className="hover:text-black">
+          <a href="#principles" className="transition hover:text-black">
             Principles
           </a>
-          <Link href="/sample" className="hover:text-black">
+          <Link href="/sample" className="transition hover:text-black">
             Sample report
           </Link>
         </nav>
         <a
           href="/api/google/start"
-          className="inline-flex items-center gap-2 rounded-full bg-neutral-950 px-5 py-3 text-xs font-semibold text-white transition hover:bg-neutral-700"
+          className="inline-flex items-center gap-2 rounded-full bg-neutral-950 px-5 py-3 text-xs font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2"
         >
           Enter workspace <ArrowUpRight size={15} />
         </a>
@@ -53,13 +53,13 @@ export default function Home() {
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <a
                 href="/api/google/start"
-                className="inline-flex items-center gap-3 rounded-full bg-neutral-950 px-6 py-4 text-sm font-semibold text-white hover:bg-neutral-700"
+                className="inline-flex items-center gap-3 rounded-full bg-neutral-950 px-6 py-4 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2"
               >
                 Continue with Google <ArrowRight size={17} />
               </a>
               <Link
                 href="/sample"
-                className="inline-flex items-center gap-2 px-3 py-4 text-sm font-semibold text-neutral-800"
+                className="inline-flex items-center gap-2 rounded-full px-3 py-4 text-sm font-semibold text-neutral-800 transition hover:bg-stone-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950"
               >
                 Explore a sample report <MoveUpRight size={16} />
               </Link>
@@ -70,10 +70,10 @@ export default function Home() {
               <span>03 / Decide</span>
             </div>
           </div>
-          <div className="relative overflow-hidden rounded-[32px] bg-[#e8e8e5] p-4 shadow-[0_30px_80px_-40px_rgba(0,0,0,.35)] sm:p-8">
+          <div className="relative overflow-hidden rounded-[36px] border border-stone-200 bg-stone-200/70 p-4 shadow-[0_30px_80px_-40px_rgba(0,0,0,.35)] sm:p-8">
             <div className="absolute -right-12 -top-12 size-56 rounded-full border border-neutral-300" />
             <div className="absolute -right-24 -top-24 size-80 rounded-full border border-neutral-300" />
-            <div className="relative rounded-[23px] border border-neutral-200 bg-white p-6 shadow-xl sm:p-8">
+            <div className="relative rounded-[28px] border border-stone-200 bg-white p-6 shadow-xl sm:p-8">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-[.2em] text-neutral-400">

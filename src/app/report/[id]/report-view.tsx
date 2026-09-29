@@ -82,13 +82,23 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
     setRetrying(true);
     setRetryError('');
     try {
-      const response = await fetch(`/api/analyses/${id}/retry`, { method: 'POST' });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error?.message || 'Retry could not start');
-      setData((current) => current && {
-        ...current,
-        analysis: { ...current.analysis, status: 'comparing', progress: 45 },
+      const response = await fetch(`/api/analyses/${id}/retry`, {
+        method: 'POST',
       });
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.error?.message || 'Retry could not start');
+      setData(
+        (current) =>
+          current && {
+            ...current,
+            analysis: {
+              ...current.analysis,
+              status: 'comparing',
+              progress: 45,
+            },
+          },
+      );
     } catch (e) {
       setRetryError(e instanceof Error ? e.message : 'Retry could not start');
     } finally {
@@ -116,7 +126,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
     <div>
       <Link
         href={isAdmin ? '/admin/analyses' : '/dashboard'}
-        className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-500"
+        className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-500 transition hover:-translate-x-0.5 hover:text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950"
       >
         <ArrowLeft size={15} /> Back to analyses
       </Link>
@@ -126,12 +136,12 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
         <div className="mt-8 animate-pulse rounded-2xl bg-neutral-200 p-20" />
       ) : (
         <>
-          <div className="mt-9 flex flex-wrap items-start justify-between gap-6">
+          <div className="mt-9 flex flex-wrap items-start justify-between gap-6 border-b border-stone-200 pb-9">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[.2em] text-neutral-400">
                 Evidence report / {new Date(a.createdAt).toLocaleDateString()}
               </p>
-              <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-[-.06em] sm:text-5xl">
+              <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-[-.065em] sm:text-[3.5rem]">
                 {a.title}
               </h1>
               <p className="mt-3 text-sm text-neutral-500">
@@ -140,31 +150,43 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
             </div>
             {a.status === 'complete' && (
               <div className="flex flex-wrap gap-2">
-                {!isAdmin && (!a.requirements.length || a.requirements.some((r) => r.status === 'analysis_error')) && (
-                  <button
-                    onClick={retryErrors}
-                    disabled={retrying}
-                    className="rounded-full border border-neutral-300 bg-white px-4 py-3 text-xs font-semibold disabled:opacity-50"
-                  >
-                    {retrying ? 'Starting retry…' : a.requirements.length ? 'Retry analysis errors' : 'Retry extraction'}
-                  </button>
-                )}
+                {!isAdmin &&
+                  (!a.requirements.length ||
+                    a.requirements.some(
+                      (r) => r.status === 'analysis_error',
+                    )) && (
+                    <button
+                      onClick={retryErrors}
+                      disabled={retrying}
+                      className="rounded-full border border-stone-200 bg-white px-4 py-3 text-xs font-semibold transition hover:border-neutral-950 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 disabled:opacity-50"
+                    >
+                      {retrying
+                        ? 'Starting retry…'
+                        : a.requirements.length
+                          ? 'Retry analysis errors'
+                          : 'Retry extraction'}
+                    </button>
+                  )}
                 <button
                   onClick={downloadCsv}
-                  className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-3 text-xs font-semibold"
+                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-3 text-xs font-semibold transition hover:border-neutral-950 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950"
                 >
                   <Download size={15} /> CSV
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="inline-flex items-center gap-2 rounded-full bg-neutral-950 px-4 py-3 text-xs font-semibold text-white"
+                  className="inline-flex items-center gap-2 rounded-full bg-neutral-950 px-4 py-3 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2"
                 >
                   <Download size={15} /> PDF
                 </button>
               </div>
             )}
           </div>
-          {retryError && <p role="alert" className="mt-4 text-sm text-red-700">{retryError}</p>}
+          {retryError && (
+            <p role="alert" className="mt-4 text-sm text-red-700">
+              {retryError}
+            </p>
+          )}
           {a.status !== 'complete' ? (
             <div className="mt-10 rounded-[26px] border border-neutral-200 bg-white p-9">
               <div className="flex items-center gap-3">
@@ -191,12 +213,16 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
             </div>
           ) : (
             <>
-              <div className="mt-10 grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
-                <div className="rounded-[26px] bg-neutral-950 p-8 text-white">
+              <div className="mt-9 grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+                <div className="relative overflow-hidden rounded-[30px] bg-neutral-950 p-8 text-white shadow-[0_28px_60px_-45px_rgba(0,0,0,.75)]">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-20 -top-32 size-80 rounded-full border border-white/10"
+                  />
                   <p className="text-[11px] font-bold uppercase tracking-[.2em] text-neutral-500">
                     Assessment outcome
                   </p>
-                  <div className="mt-8 text-4xl font-semibold tracking-[-.06em]">
+                  <div className="relative mt-10 text-4xl font-semibold tracking-[-.065em]">
                     {a.decision}
                   </div>
                   <p className="mt-4 max-w-xl text-sm leading-6 text-neutral-400">
@@ -211,7 +237,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-[22px] border border-neutral-200 bg-white p-6">
+                  <div className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
                     <div className="text-4xl font-semibold">
                       {
                         a.requirements.filter((r) => r.status === 'satisfied')
@@ -222,7 +248,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
                       Supported
                     </div>
                   </div>
-                  <div className="rounded-[22px] border border-neutral-200 bg-white p-6">
+                  <div className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
                     <div className="text-4xl font-semibold">
                       {
                         a.requirements.filter(
@@ -234,7 +260,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
                       Needs review
                     </div>
                   </div>
-                  <div className="rounded-[22px] border border-neutral-200 bg-white p-6">
+                  <div className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
                     <div className="text-4xl font-semibold">
                       {
                         a.requirements.filter(
@@ -246,7 +272,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
                       Not satisfied
                     </div>
                   </div>
-                  <div className="rounded-[22px] border border-neutral-200 bg-white p-6">
+                  <div className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
                     <div className="text-4xl font-semibold">
                       {
                         a.requirements.filter(
@@ -290,13 +316,13 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
                     {a.requirements.length} extracted
                   </span>
                 </div>
-                <div className="mt-6 overflow-hidden rounded-[24px] border border-neutral-200 bg-white">
+                <div className="mt-6 overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
                   {a.requirements.length ? (
                     a.requirements.map((r) => (
                       <button
                         key={r.id}
                         onClick={() => setSelected(r)}
-                        className="flex w-full flex-wrap items-center justify-between gap-4 border-b border-neutral-100 px-6 py-5 text-left last:border-0 hover:bg-neutral-50"
+                        className="group flex w-full flex-wrap items-center justify-between gap-4 border-b border-stone-100 px-6 py-5 text-left transition-colors duration-200 last:border-0 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-neutral-950"
                       >
                         <div className="max-w-2xl">
                           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.15em] text-neutral-400">
@@ -320,7 +346,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
                           {r.status.replaceAll('_', ' ')}{' '}
                           <ExternalLink
                             size={14}
-                            className="ml-2 text-neutral-400"
+                            className="ml-2 text-neutral-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                           />
                         </span>
                       </button>
@@ -334,7 +360,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
                 </div>
               </section>
               <section className="mt-12 grid gap-6 lg:grid-cols-2">
-                <div className="rounded-[24px] border border-neutral-200 bg-white p-7">
+                <div className="rounded-[28px] border border-stone-200 bg-white p-7 shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
                   <h2 className="text-lg font-semibold">
                     Submission checklist
                   </h2>
@@ -356,7 +382,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
                     )}
                   </div>
                 </div>
-                <div className="rounded-[24px] border border-neutral-200 bg-white p-7">
+                <div className="rounded-[28px] border border-stone-200 bg-white p-7 shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
                   <h2 className="text-lg font-semibold">Report provenance</h2>
                   <div className="mt-5 space-y-3 text-sm text-neutral-500">
                     <div className="flex justify-between">
@@ -382,11 +408,11 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
           )}
           {selected && (
             <div
-              className="fixed inset-0 z-50 flex justify-end bg-black/40"
+              className="fixed inset-0 z-50 flex justify-end bg-black/45 backdrop-blur-[3px]"
               onClick={() => setSelected(null)}
             >
               <div
-                className="h-full w-full max-w-2xl overflow-y-auto bg-white p-7 shadow-2xl sm:p-10"
+                className="h-full w-full max-w-2xl overflow-y-auto border-l border-stone-200 bg-[#fdfcfb] p-7 shadow-2xl sm:p-10"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
@@ -401,7 +427,7 @@ export function ReportView({ id, isAdmin }: { id: string; isAdmin: boolean }) {
                 <h2 className="mt-3 text-2xl font-semibold tracking-tight">
                   {selected.text}
                 </h2>
-                <div className="mt-6 rounded-2xl bg-neutral-100 p-5">
+                <div className="mt-6 rounded-[24px] border border-stone-200 bg-white p-6">
                   <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
                     {selected.status.replaceAll('_', ' ')}
                   </p>

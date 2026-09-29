@@ -33,15 +33,17 @@ export default function Settings() {
       <p className="text-[11px] font-bold uppercase tracking-[.2em] text-neutral-400">
         Admin / Settings
       </p>
-      <h1 className="mt-3 text-4xl font-semibold tracking-[-.06em] sm:text-5xl">
+      <h1 className="mt-4 text-4xl font-semibold tracking-[-.065em] sm:text-[3.5rem]">
         AI settings
       </h1>
       <p className="mt-3 text-sm text-neutral-500">
         Configure the model used for new tender analyses. Existing reports
         retain their pinned model.
       </p>
-      <div className="mt-10 rounded-[26px] border border-neutral-200 bg-white p-7 sm:p-9">
-        <SlidersHorizontal size={22} />
+      <div className="mt-10 rounded-[30px] border border-stone-200 bg-white p-7 shadow-[0_18px_50px_-42px_rgba(0,0,0,.45)] sm:p-10">
+        <span className="grid size-12 place-items-center rounded-2xl bg-stone-100">
+          <SlidersHorizontal size={22} />
+        </span>
         <h2 className="mt-6 text-xl font-semibold">Reasoning model</h2>
         <p className="mt-2 text-sm leading-6 text-neutral-500">
           Single-model mode. Availability is checked against your Groq account
@@ -52,7 +54,7 @@ export default function Settings() {
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="mt-3 w-full rounded-xl border border-neutral-200 bg-white px-4 py-4 text-sm font-medium normal-case tracking-normal text-black"
+            className="mt-3 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-sm font-medium normal-case tracking-normal text-black outline-none transition focus:border-neutral-950 focus:bg-white focus:ring-4 focus:ring-stone-200/70"
           >
             {options.map((x) => (
               <option key={x}>{x}</option>
@@ -72,7 +74,7 @@ export default function Settings() {
         <button
           onClick={save}
           disabled={busy || !model}
-          className="mt-7 rounded-full bg-neutral-950 px-6 py-3 text-xs font-semibold text-white disabled:opacity-40"
+          className="mt-7 rounded-full bg-neutral-950 px-6 py-3.5 text-xs font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
         >
           {busy ? 'Checking availability…' : 'Save settings'}
         </button>

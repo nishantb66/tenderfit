@@ -39,12 +39,12 @@ export default function Admin() {
   }, []);
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-5 border-b border-stone-200 pb-9">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[.2em] text-neutral-400">
             Admin / Overview
           </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-[-.06em] sm:text-5xl">
+          <h1 className="mt-4 text-4xl font-semibold tracking-[-.065em] sm:text-[3.5rem]">
             Control center
           </h1>
           <p className="mt-3 text-sm text-neutral-500">
@@ -53,12 +53,12 @@ export default function Admin() {
         </div>
         <Link
           href="/admin/knowledge"
-          className="inline-flex items-center gap-2 rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white"
+          className="inline-flex items-center gap-2 rounded-full bg-neutral-950 px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2"
         >
           Manage knowledge <ArrowUpRight size={17} />
         </Link>
       </div>
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-9 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           [
             Database,
@@ -77,7 +77,7 @@ export default function Admin() {
           return (
             <div
               key={String(label)}
-              className="rounded-[23px] border border-neutral-200 bg-white p-6"
+              className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]"
             >
               <I size={18} className="text-neutral-500" />
               <div className="mt-8 text-4xl font-semibold tracking-[-.06em]">
@@ -91,7 +91,7 @@ export default function Admin() {
         })}
       </div>
       <div className="mt-12 grid gap-6 lg:grid-cols-[1.3fr_.7fr]">
-        <div className="overflow-hidden rounded-[24px] border border-neutral-200 bg-white">
+        <div className="overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
           <div className="flex items-center justify-between border-b border-neutral-100 p-6">
             <div>
               <h2 className="text-lg font-semibold">Recent analyses</h2>
@@ -107,7 +107,7 @@ export default function Admin() {
             <Link
               key={x.id}
               href={`/report/${x.id}`}
-              className="flex items-center justify-between gap-4 border-b border-neutral-100 px-6 py-4 last:border-0 hover:bg-neutral-50"
+              className="flex items-center justify-between gap-4 border-b border-stone-100 px-6 py-4 transition-colors last:border-0 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-neutral-950"
             >
               <div>
                 <p className="text-sm font-semibold">{x.title}</p>
@@ -122,7 +122,11 @@ export default function Admin() {
             <p className="p-8 text-sm text-neutral-400">No analyses yet.</p>
           )}
         </div>
-        <div className="rounded-[24px] bg-neutral-950 p-7 text-white">
+        <div className="relative overflow-hidden rounded-[28px] bg-neutral-950 p-7 text-white shadow-[0_28px_60px_-45px_rgba(0,0,0,.75)]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-14 -top-20 size-56 rounded-full border border-white/10"
+          />
           <p className="text-xs font-bold uppercase tracking-[.2em] text-neutral-500">
             Extract Engine
           </p>
@@ -135,13 +139,13 @@ export default function Admin() {
           </p>
           <Link
             href="/admin/knowledge"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-semibold text-black"
+            className="relative mt-8 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           >
             Open knowledge base <ArrowUpRight size={15} />
           </Link>
         </div>
       </div>
-      <div className="mt-12 rounded-[24px] border border-neutral-200 bg-white p-7">
+      <div className="mt-12 rounded-[28px] border border-stone-200 bg-white p-7 shadow-[0_18px_50px_-44px_rgba(0,0,0,.45)]">
         <h2 className="text-lg font-semibold">Model usage</h2>
         <div className="mt-5 divide-y divide-neutral-100">
           {data?.usage?.map((x) => (
